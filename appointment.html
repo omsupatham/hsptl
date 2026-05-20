@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Appointment | OM SUPATHAM HOSPITAL</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-mark"><img data-brand-logo-image alt="" hidden></span><span data-brand-name>OM SUPATHAM HOSPITAL</span></a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="index.html">Hospital</a>
+      <a href="patient.html">Patient Portal</a>
+      <a href="appointment.html" aria-current="page">Appointment</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+  <div class="notice-bar" data-public-notice></div>
+
+  <main class="form-page">
+    <section class="form-intro">
+      <p class="eyebrow">Online appointment</p>
+      <h1>Book a hospital visit</h1>
+      <p class="muted">Submit the request and it will appear in the admin dashboard for confirmation and maintenance tracking.</p>
+      <div class="progress-strip">
+        <span class="active">Details</span>
+        <span>Review</span>
+        <span>Confirm</span>
+      </div>
+    </section>
+
+    <form class="appointment-form" data-appointment-form>
+      <label>
+        Patient name
+        <input name="name" type="text" placeholder="Enter full name" required>
+      </label>
+      <label>
+        Mobile number
+        <input name="phone" type="tel" placeholder="+91 90000 00000" required>
+      </label>
+      <label>
+        Email
+        <input name="email" type="email" placeholder="name@example.com" required>
+      </label>
+      <label>
+        Department
+        <select name="department" required>
+          <option value="">Select department</option>
+          <option>Cardiology</option>
+          <option>Emergency</option>
+          <option>Diagnostics</option>
+          <option>Maternity</option>
+          <option>Orthopedics</option>
+          <option>General Medicine</option>
+        </select>
+      </label>
+      <label>
+        Preferred date
+        <input name="date" type="date" required>
+      </label>
+      <label>
+        Preferred time
+        <select name="time" required>
+          <option value="">Select time</option>
+          <option>09:00 AM</option>
+          <option>11:30 AM</option>
+          <option>02:00 PM</option>
+          <option>04:30 PM</option>
+        </select>
+      </label>
+      <label class="wide">
+        Symptoms or notes
+        <textarea name="notes" rows="5" placeholder="Briefly describe the reason for visit"></textarea>
+      </label>
+      <button class="button primary wide" type="submit">Submit appointment</button>
+      <p class="form-message wide" data-form-message role="status"></p>
+    </form>
+  </main>
+  <footer class="site-footer">
+    <span><span data-brand-name>OM SUPATHAM HOSPITAL</span></span>
+    <span>Developed by Mahesh Kolla</span>
+  </footer>
+  <a class="hidden-admin-access" href="admin.html" aria-label="Staff access"></a>
+</body>
+</html>

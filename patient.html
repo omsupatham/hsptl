@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient Portal | OM SUPATHAM HOSPITAL</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-mark"><img data-brand-logo-image alt="" hidden></span><span data-brand-name>OM SUPATHAM HOSPITAL</span></a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="index.html">Hospital</a>
+      <a href="patient.html" aria-current="page">Patient Portal</a>
+      <a href="appointment.html">Appointment</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+  <div class="notice-bar" data-public-notice></div>
+
+  <main class="portal-layout">
+    <aside class="portal-sidebar">
+      <h1>Patient Portal</h1>
+      <p class="muted">View care access, digital services, and appointment progress.</p>
+      <a class="button primary full" href="appointment.html">New appointment</a>
+    </aside>
+
+    <section class="portal-content">
+      <div class="dashboard-grid">
+        <article class="metric-card">
+          <span>Next queue</span>
+          <strong data-patient-next>Book now</strong>
+        </article>
+        <article class="metric-card">
+          <span>Report desk</span>
+          <strong>Online</strong>
+        </article>
+        <article class="metric-card">
+          <span>Support line</span>
+          <strong>24/7</strong>
+        </article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Your online care options</h2>
+          <a href="contact.html">Contact care team</a>
+        </div>
+        <div class="option-grid">
+          <article>
+            <h3>Digital OPD</h3>
+            <p>Book a doctor visit, upload notes, and receive confirmation from reception.</p>
+          </article>
+          <article>
+            <h3>Diagnostics</h3>
+            <p>Request lab tests, imaging slots, and preventive health packages.</p>
+          </article>
+          <article>
+            <h3>Emergency help</h3>
+            <p>Call ambulance support and share symptoms before arrival.</p>
+          </article>
+          <article>
+            <h3>Follow-up care</h3>
+            <p>Track review dates, report collection, and medication reminders.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Login with mobile number</h2>
+          <span class="status-pill">SMS details</span>
+        </div>
+        <form class="mobile-login-form" data-mobile-login-form>
+          <label>
+            Mobile number used for appointment
+            <input name="phone" type="tel" placeholder="+91 90000 11111" required>
+          </label>
+          <button class="button primary" type="submit">Get appointment SMS</button>
+          <p class="form-message" data-mobile-login-message role="status"></p>
+        </form>
+        <div class="sms-preview is-hidden" data-sms-preview></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Recent appointments</h2>
+          <span class="status-pill">Local portal</span>
+        </div>
+        <div class="appointment-list" data-patient-appointments></div>
+      </section>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <span><span data-brand-name>OM SUPATHAM HOSPITAL</span></span>
+    <span>Developed by Mahesh Kolla</span>
+  </footer>
+  <a class="hidden-admin-access" href="admin.html" aria-label="Staff access"></a>
+</body>
+</html>

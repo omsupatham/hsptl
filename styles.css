@@ -1,0 +1,649 @@
+(function () {
+  const appointmentKey = "carebridge.appointments";
+  const settingsKey = "carebridge.settings";
+  const adminSessionKey = "carebridge.admin.session";
+  const adminPasswordKey = "carebridge.admin.password";
+  const defaultAdminPassword = "CareBridge@2026";
+  const defaultContent = {
+    hospitalName: "OM SUPATHAM HOSPITAL",
+    logoImage: "",
+    heroEyebrow: "24/7 multispeciality care",
+    heroTitle: "",
+    heroText: "Connected emergency, outpatient, diagnostic, and digital care for families who need fast answers and steady clinical support.",
+    notice: "",
+    portalStatus: "Online",
+    accentColor: "#0f9f8f",
+    statSpecialists: "35+",
+    statBeds: "120",
+    statTheatres: "6",
+    statEmergency: "24/7",
+    smsTemplate: "Hi {name}, your {department} appointment at {hospital} is on {date} at {time}. Status: {status}. Appointment ID: {id}. For help call +91 98765 43000.",
+    specialties: [
+      "Cardiology | Heart screening, cardiac ICU, hypertension clinics, and post-surgery recovery. |",
+      "Emergency & Trauma | Round-the-clock trauma response, ambulance coordination, triage, and critical care. |",
+      "Diagnostics & Imaging | Lab reports, digital X-ray, ultrasound, CT coordination, and same-day samples. |",
+      "Maternity & Neonatal | Antenatal visits, delivery suites, neonatal support, and postnatal care. |",
+      "Orthopedics | Joint pain, fracture management, sports injury care, and rehabilitation planning. |",
+      "Neurology | Stroke response, headache care, seizure evaluation, and neuro diagnostics. |"
+    ].join("\n"),
+    doctors: [
+      "Dr. Anita Rao | Senior Cardiologist for heart failure, hypertension, cardiac ICU, and preventive cardiac care. |",
+      "Dr. Vikram Menon | Emergency physician for trauma response, acute medicine, emergency stabilization, and ICU transfer. |",
+      "Dr. Sarah John | Obstetrics specialist for pregnancy care, safe delivery planning, neonatal coordination, and postnatal follow-up. |",
+      "Dr. Imran Shah | Orthopedic surgeon for joint care, fracture management, sports injuries, and rehabilitation planning. |"
+    ].join("\n"),
+    facilities: [
+      "24/7 Emergency | Trauma bay, ambulance desk, oxygen support, and rapid triage.",
+      "Intensive Care Units | ICU, cardiac care, neonatal monitoring, and isolation-ready rooms.",
+      "Operation Theatres | Modular theatres, anesthesia support, sterilization, and recovery bays.",
+      "Pharmacy | In-house medicine counter with prescription and discharge support.",
+      "Blood & Diagnostics | Sample collection, imaging coordination, and report desk.",
+      "Insurance & Billing | Cashless insurance help, estimates, discharge billing, and records.",
+      "Patient Rooms | General, semi-private, private, and attendant-friendly inpatient rooms.",
+      "Digital Front Desk | Online appointments, contact requests, admin maintenance, and live status."
+    ].join("\n"),
+    gallery: [
+      "Reception & Help Desk | Fast registration, appointment support, and visitor guidance. |",
+      "Emergency Entrance | Ambulance-ready access with triage and critical response support. |",
+      "Diagnostics Wing | Lab sample collection, imaging desk, and report coordination. |",
+      "Operation Theatres | Clean modular surgical spaces with recovery workflow. |",
+      "Maternity Suite | Delivery care, newborn support, and family consultation rooms. |",
+      "Patient Rooms | Comfortable inpatient rooms with nursing and attendant access. |"
+    ].join("\n")
+  };
+
+  const $ = (selector) => document.querySelector(selector);
+  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+  const readJson = (key, fallback) => {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const writeJson = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+  const appointments = () => readJson(appointmentKey, []);
+  const saveAppointments = (items) => writeJson(appointmentKey, items);
+  const getAdminPassword = () => localStorage.getItem(adminPasswordKey) || defaultAdminPassword;
+
+  function clearOldDefaultNotice() {
+    const settings = readJson(settingsKey, {});
+    let changed = false;
+    const oldNotices = [
+      "Welcome to CareBridge Hospital. Emergency, OPD, diagnostics, and online appointment services are active.",
+      "Welcome to OM SUPATHAM HOSPITAL. Emergency, OPD, diagnostics, and online appointment services are active."
+    ];
+    if (oldNotices.includes(settings.notice)) {
+      settings.notice = "";
+      changed = true;
+    }
+    if (settings.hospitalName && settings.heroTitle !== settings.hospitalName) {
+      settings.heroTitle = settings.hospitalName;
+      changed = true;
+    }
+    if (changed) {
+      writeJson(settingsKey, settings);
+    }
+  }
+
+  function applySettings() {
+    const settings = { ...defaultContent, ...readJson(settingsKey, {}) };
+    const displayName = settings.hospitalName || defaultContent.hospitalName;
+    const heroTitle = displayName;
+    if (settings.accentColor) {
+      document.documentElement.style.setProperty("--accent", settings.accentColor);
+    }
+    $$("[data-brand-name]").forEach((brand) => {
+      brand.textContent = displayName;
+    });
+    $$("[data-brand-logo-image]").forEach((logo) => {
+      if (settings.logoImage) {
+        logo.src = settings.logoImage;
+        logo.hidden = false;
+        logo.parentElement.classList.add("has-logo-image");
+      } else {
+        logo.hidden = true;
+        logo.removeAttribute("src");
+        logo.parentElement.classList.remove("has-logo-image");
+      }
+    });
+    setText("[data-hero-eyebrow]", settings.heroEyebrow);
+    setText("[data-hero-title]", heroTitle);
+    setText("[data-hero-text]", settings.heroText);
+    setText("[data-stat-specialists]", settings.statSpecialists);
+    setText("[data-stat-beds]", settings.statBeds);
+    setText("[data-stat-theatres]", settings.statTheatres);
+    setText("[data-stat-emergency]", settings.statEmergency);
+    updatePageTitle(displayName);
+    $$("[data-public-notice]").forEach((notice) => {
+      notice.textContent = settings.notice || "";
+      notice.hidden = !settings.notice;
+    });
+    const status = $("[data-admin-status]");
+    if (status) status.textContent = settings.portalStatus || "Online";
+    renderSpecialties(settings.specialties);
+    renderFacilities(settings.facilities);
+    renderGallery(settings.gallery);
+    renderDoctors(settings.doctors);
+    document.body.classList.add("settings-ready");
+  }
+
+  function updatePageTitle(displayName) {
+    const titleMap = [
+      ["admin.html", `Admin Portal | ${displayName}`],
+      ["appointment.html", `Online Appointment | ${displayName}`],
+      ["contact.html", `Contact | ${displayName}`],
+      ["gallery.html", `Gallery | ${displayName}`],
+      ["patient.html", `Patient Portal | ${displayName}`]
+    ];
+    const match = titleMap.find(([path]) => window.location.pathname.endsWith(path));
+    document.title = match ? match[1] : displayName;
+  }
+
+  function setText(selector, value) {
+    $$(selector).forEach((element) => {
+      element.textContent = value;
+    });
+  }
+
+  function parseLines(text) {
+    return String(text || "")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [title, description, image] = line.split("|").map((part) => part.trim());
+        return {
+          title: title || "Hospital service",
+          description: description || "Custom hospital information managed by the admin portal.",
+          image: image || ""
+        };
+      });
+  }
+
+  function imageBlock(item, className, fallbackText) {
+    if (item.image && item.image.startsWith("data:image/")) {
+      return `<img class="${className}" src="${item.image}" alt="${escapeHtml(item.title)}">`;
+    }
+    return `<div class="${className} image-fallback" aria-hidden="true"><span>${escapeHtml(fallbackText)}</span></div>`;
+  }
+
+  function renderSpecialties(text) {
+    const container = $("[data-specialties-grid]");
+    if (!container) return;
+    container.innerHTML = parseLines(text).map((item) => `
+      <article class="service-card">
+        ${imageBlock(item, "card-image", item.title.slice(0, 2).toUpperCase())}
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.description)}</p>
+      </article>`).join("");
+  }
+
+  function renderDoctors(text) {
+    const container = $("[data-doctors-grid]");
+    if (!container) return;
+    container.innerHTML = parseLines(text).map((item) => `
+      <article class="doctor-card">
+        ${imageBlock(item, "doctor-image", item.title.slice(0, 2).toUpperCase())}
+        <h3>${escapeHtml(item.title)}</h3>
+        <strong>${escapeHtml(item.description)}</strong>
+      </article>`).join("");
+  }
+
+  function renderFacilities(text) {
+    const container = $("[data-facilities-grid]");
+    if (!container) return;
+    container.innerHTML = parseLines(text).map((item) => `
+      <article class="facility-card">
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.description)}</p>
+      </article>`).join("");
+  }
+
+  function renderGallery(text) {
+    const container = $("[data-gallery-grid]");
+    if (!container) return;
+    container.innerHTML = parseLines(text).map((item, index) => `
+      <article class="gallery-card">
+        ${item.image && item.image.startsWith("data:image/")
+          ? `<img class="gallery-photo" src="${item.image}" alt="${escapeHtml(item.title)}">`
+          : `<div class="gallery-art gallery-art-${(index % 6) + 1}" aria-hidden="true"><span>${escapeHtml(item.title)}</span></div>`}
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.description)}</p>
+      </article>`).join("");
+  }
+
+  function renderPatientAppointments() {
+    const container = $("[data-patient-appointments]");
+    if (!container) return;
+
+    const items = appointments();
+    const next = $("[data-patient-next]");
+    if (next) next.textContent = items[0] ? items[0].date : "Book now";
+
+    container.innerHTML = items.length
+      ? items.map(itemTemplate).join("")
+      : '<p class="muted">No appointment requests yet.</p>';
+  }
+
+  function normalizePhone(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function buildSmsMessage(item) {
+    const settings = { ...defaultContent, ...readJson(settingsKey, {}) };
+    const replacements = {
+      "{name}": item.name,
+      "{department}": item.department,
+      "{hospital}": settings.hospitalName,
+      "{date}": item.date,
+      "{time}": item.time,
+      "{status}": item.status,
+      "{id}": item.id,
+      "{phone}": item.phone
+    };
+    return Object.entries(replacements).reduce((message, [token, value]) => {
+      return message.replaceAll(token, value || "");
+    }, settings.smsTemplate || defaultContent.smsTemplate);
+  }
+
+  function bindMobileLogin() {
+    const form = $("[data-mobile-login-form]");
+    const preview = $("[data-sms-preview]");
+    const message = $("[data-mobile-login-message]");
+    if (!form || !preview || !message) return;
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const phone = normalizePhone(new FormData(form).get("phone"));
+      const matches = appointments().filter((item) => normalizePhone(item.phone).endsWith(phone) || phone.endsWith(normalizePhone(item.phone)));
+
+      if (!matches.length) {
+        preview.classList.add("is-hidden");
+        preview.innerHTML = "";
+        message.textContent = "No appointment found for this mobile number.";
+        return;
+      }
+
+      message.textContent = "SMS information generated below.";
+      preview.classList.remove("is-hidden");
+      preview.innerHTML = matches.map((item) => `
+        <article class="sms-bubble">
+          <span>SMS to ${escapeHtml(item.phone)}</span>
+          <p>${escapeHtml(buildSmsMessage(item))}</p>
+        </article>`).join("");
+    });
+  }
+
+  function itemTemplate(item) {
+    return `
+      <article class="appointment-item">
+        <div>
+          <strong>${escapeHtml(item.name)} - ${escapeHtml(item.department)}</strong>
+          <span class="muted">${escapeHtml(item.date)} at ${escapeHtml(item.time)} | ${escapeHtml(item.phone)}</span>
+          <p>${escapeHtml(item.notes || "No notes added.")}</p>
+        </div>
+        <div class="appointment-actions">
+          <span class="status-pill">${escapeHtml(item.status)}</span>
+        </div>
+      </article>`;
+  }
+
+  function renderAdminAppointments() {
+    const container = $("[data-admin-appointments]");
+    if (!container) return;
+
+    const items = appointments();
+    $("[data-admin-count]").textContent = String(items.length);
+    $("[data-confirmed-count]").textContent = String(items.filter((item) => item.status === "Confirmed").length);
+
+    container.innerHTML = items.length
+      ? items.map((item) => `
+        <article class="appointment-item">
+          <div>
+            <strong>${escapeHtml(item.name)} - ${escapeHtml(item.department)}</strong>
+            <span class="muted">${escapeHtml(item.date)} at ${escapeHtml(item.time)} | ${escapeHtml(item.email)}</span>
+            <p>${escapeHtml(item.notes || "No notes added.")}</p>
+          </div>
+          <div class="appointment-actions">
+            <button class="button secondary" type="button" data-status="${item.id}" data-next="Confirmed">Confirm</button>
+            <button class="button secondary" type="button" data-status="${item.id}" data-next="In review">Review</button>
+            <span class="status-pill">${escapeHtml(item.status)}</span>
+          </div>
+        </article>`).join("")
+      : '<p class="muted">No appointment requests are waiting.</p>';
+  }
+
+  function bindAppointmentForm() {
+    const form = $("[data-appointment-form]");
+    if (!form) return;
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const item = {
+        id: String(Date.now()),
+        name: data.get("name"),
+        phone: data.get("phone"),
+        email: data.get("email"),
+        department: data.get("department"),
+        date: data.get("date"),
+        time: data.get("time"),
+        notes: data.get("notes"),
+        status: "Submitted"
+      };
+      saveAppointments([item, ...appointments()]);
+      form.reset();
+      $("[data-form-message]").textContent = `Appointment request submitted. Your ID is ${item.id}.`;
+    });
+  }
+
+  function bindAdmin() {
+    bindAdminLogin();
+
+    const adminList = $("[data-admin-appointments]");
+    if (adminList) {
+      adminList.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-status]");
+        if (!button) return;
+        const items = appointments().map((item) => (
+          item.id === button.dataset.status ? { ...item, status: button.dataset.next } : item
+        ));
+        saveAppointments(items);
+        renderAdminAppointments();
+      });
+    }
+
+    const clear = $("[data-clear-appointments]");
+    if (clear) {
+      clear.addEventListener("click", () => {
+        saveAppointments([]);
+        renderAdminAppointments();
+      });
+    }
+
+    const seed = $("[data-seed-demo]");
+    if (seed) {
+      seed.addEventListener("click", () => {
+        saveAppointments([
+          {
+            id: "CB1001",
+            name: "Anita Rao",
+            phone: "+91 90000 11111",
+            email: "anita@example.com",
+            department: "Cardiology",
+            date: "2026-05-22",
+            time: "11:30 AM",
+            notes: "Chest discomfort follow-up",
+            status: "In review"
+          },
+          {
+            id: "CB1002",
+            name: "Rahul Mehta",
+            phone: "+91 90000 22222",
+            email: "rahul@example.com",
+            department: "Diagnostics",
+            date: "2026-05-23",
+            time: "09:00 AM",
+            notes: "Annual health package",
+            status: "Confirmed"
+          }
+        ]);
+        renderAdminAppointments();
+      });
+    }
+
+    const settingsForm = $("[data-settings-form]");
+    if (settingsForm) {
+      const settings = { ...defaultContent, ...readJson(settingsKey, {}) };
+      Object.entries(settings).forEach(([key, value]) => {
+        if (settingsForm.elements[key] && settingsForm.elements[key].type !== "file") settingsForm.elements[key].value = value;
+      });
+      refreshImageTargets(settingsForm);
+
+      settingsForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(settingsForm);
+        const current = { ...defaultContent, ...readJson(settingsKey, {}) };
+        const next = { ...current, ...Object.fromEntries(data.entries()) };
+        next.logoImage = current.logoImage;
+        next.heroTitle = next.hospitalName;
+        writeJson(settingsKey, next);
+        applySettings();
+        refreshImageTargets(settingsForm);
+        $("[data-settings-message]").textContent = "Settings saved for this browser.";
+      });
+    }
+
+    const smsSettingsForm = $("[data-sms-settings-form]");
+    if (smsSettingsForm) {
+      const settings = { ...defaultContent, ...readJson(settingsKey, {}) };
+      smsSettingsForm.elements.smsTemplate.value = settings.smsTemplate;
+      smsSettingsForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const existing = { ...defaultContent, ...readJson(settingsKey, {}) };
+        existing.smsTemplate = new FormData(smsSettingsForm).get("smsTemplate");
+        writeJson(settingsKey, existing);
+        $("[data-sms-settings-message]").textContent = "SMS template saved.";
+      });
+    }
+
+    bindPasswordChange();
+
+    const resetContent = $("[data-reset-content]");
+    if (resetContent && settingsForm) {
+      resetContent.addEventListener("click", () => {
+        writeJson(settingsKey, defaultContent);
+        Object.entries(defaultContent).forEach(([key, value]) => {
+          if (settingsForm.elements[key] && settingsForm.elements[key].type !== "file") settingsForm.elements[key].value = value;
+        });
+        applySettings();
+        refreshImageTargets(settingsForm);
+        $("[data-settings-message]").textContent = "Default hospital content restored.";
+      });
+    }
+
+    bindImageUploads(settingsForm);
+  }
+
+  function refreshImageTargets(form) {
+    if (!form) return;
+    ["specialties", "doctors", "gallery"].forEach((name) => {
+      const select = form.querySelector(`[data-image-target="${name}"]`);
+      const source = form.elements[name];
+      if (!select || !source) return;
+      select.innerHTML = parseLines(source.value).map((item, index) => (
+        `<option value="${index}">${escapeHtml(item.title)}</option>`
+      )).join("");
+    });
+  }
+
+  function bindImageUploads(settingsForm) {
+    if (!settingsForm) return;
+    const logoUpload = settingsForm.querySelector('[data-image-upload="logoImage"]');
+    if (logoUpload) {
+      logoUpload.addEventListener("change", async () => {
+        const dataUrl = await readImageFile(logoUpload.files[0]);
+        if (!dataUrl) return;
+        const settings = { ...defaultContent, ...readJson(settingsKey, {}) };
+        settings.logoImage = dataUrl;
+        writeJson(settingsKey, settings);
+        applySettings();
+        $("[data-settings-message]").textContent = "Logo image uploaded.";
+      });
+    }
+
+    $$("[data-list-image-upload]").forEach((input) => {
+      input.addEventListener("change", async () => {
+        const listName = input.dataset.listImageUpload;
+        const dataUrl = await readImageFile(input.files[0]);
+        if (!listName || !dataUrl) return;
+        const select = settingsForm.querySelector(`[data-image-target="${listName}"]`);
+        const textarea = settingsForm.elements[listName];
+        const targetIndex = Number(select.value || 0);
+        const lines = String(textarea.value || "").split("\n");
+        const parts = (lines[targetIndex] || "").split("|").map((part) => part.trim());
+        lines[targetIndex] = `${parts[0] || "Item"} | ${parts[1] || "Description"} | ${dataUrl}`;
+        textarea.value = lines.join("\n");
+        const settings = { ...defaultContent, ...readJson(settingsKey, {}) };
+        settings[listName] = textarea.value;
+        writeJson(settingsKey, settings);
+        applySettings();
+        refreshImageTargets(settingsForm);
+        $("[data-settings-message]").textContent = `${listName} image uploaded.`;
+      });
+    });
+  }
+
+  function readImageFile(file) {
+    return new Promise((resolve) => {
+      if (!file || !file.type.startsWith("image/")) {
+        resolve("");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function bindPasswordChange() {
+    const form = $("[data-password-form]");
+    if (!form) return;
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const currentPassword = data.get("currentPassword");
+      const newPassword = data.get("newPassword");
+      const confirmPassword = data.get("confirmPassword");
+      const message = $("[data-password-message]");
+
+      if (currentPassword !== getAdminPassword()) {
+        message.textContent = "Current password is incorrect.";
+        message.classList.add("danger-text");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        message.textContent = "New passwords do not match.";
+        message.classList.add("danger-text");
+        return;
+      }
+
+      localStorage.setItem(adminPasswordKey, newPassword);
+      sessionStorage.removeItem(adminSessionKey);
+      form.reset();
+      message.classList.remove("danger-text");
+      message.textContent = "Password changed. Logout and use the new password next time.";
+    });
+  }
+
+  function bindAdminLogin() {
+    const login = $("[data-admin-login]");
+    const dashboard = $("[data-admin-dashboard]");
+    const form = $("[data-login-form]");
+    if (!login || !dashboard || !form) return;
+
+    const showDashboard = () => {
+      login.classList.add("is-hidden");
+      dashboard.classList.remove("is-hidden");
+      renderAdminAppointments();
+    };
+
+    if (sessionStorage.getItem(adminSessionKey) === "unlocked") {
+      showDashboard();
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const password = new FormData(form).get("password");
+      if (password === getAdminPassword()) {
+        sessionStorage.setItem(adminSessionKey, "unlocked");
+        form.reset();
+        showDashboard();
+        return;
+      }
+      $("[data-login-message]").textContent = "Incorrect password.";
+    });
+
+    const logout = $("[data-admin-logout]");
+    if (logout) {
+      logout.addEventListener("click", () => {
+        sessionStorage.removeItem(adminSessionKey);
+        dashboard.classList.add("is-hidden");
+        login.classList.remove("is-hidden");
+      });
+    }
+  }
+
+  function bindContactForm() {
+    const form = $("[data-contact-form]");
+    if (!form) return;
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      form.reset();
+      $("[data-contact-message]").textContent = "Message recorded. The care desk can follow up from this request.";
+    });
+  }
+
+  function bindOpeningEffects() {
+    const overlay = $("[data-opening-overlay]");
+    if (overlay) {
+      window.setTimeout(() => {
+        overlay.classList.add("is-done");
+      }, 1700);
+      window.setTimeout(() => {
+        overlay.remove();
+      }, 2500);
+    }
+
+    $$(".button, .top-nav a").forEach((target) => {
+      target.addEventListener("click", (event) => {
+        const rect = target.getBoundingClientRect();
+        const ripple = document.createElement("span");
+        ripple.className = target.classList.contains("button") ? "button-ripple" : "nav-ripple";
+        ripple.style.left = `${event.clientX - rect.left}px`;
+        ripple.style.top = `${event.clientY - rect.top}px`;
+        target.appendChild(ripple);
+
+        target.classList.remove("button-click-glow", "nav-click-glow");
+        void target.offsetWidth;
+        target.classList.add(target.classList.contains("button") ? "button-click-glow" : "nav-click-glow");
+
+        const spark = document.createElement("span");
+        spark.className = target.classList.contains("button") ? "button-light-spark" : "nav-light-spark";
+        spark.style.left = `${event.clientX - rect.left}px`;
+        spark.style.top = `${event.clientY - rect.top}px`;
+        target.appendChild(spark);
+
+        window.setTimeout(() => ripple.remove(), 650);
+        window.setTimeout(() => spark.remove(), 850);
+        window.setTimeout(() => target.classList.remove("button-click-glow", "nav-click-glow"), 850);
+      });
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  clearOldDefaultNotice();
+  applySettings();
+  bindAppointmentForm();
+  bindAdmin();
+  bindContactForm();
+  bindMobileLogin();
+  bindOpeningEffects();
+  renderPatientAppointments();
+  renderAdminAppointments();
+})();

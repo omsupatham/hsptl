@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Portal | OM SUPATHAM HOSPITAL</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body class="admin-body">
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-mark"><img data-brand-logo-image alt="" hidden></span><span data-brand-name>OM SUPATHAM HOSPITAL</span></a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="index.html">Hospital</a>
+      <a href="patient.html">Patient Portal</a>
+      <a href="appointment.html">Appointment</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+  <div class="notice-bar" data-public-notice></div>
+
+  <main class="login-page" data-admin-login>
+    <form class="login-panel" data-login-form>
+      <p class="eyebrow">Restricted staff access</p>
+      <h1>Admin Login</h1>
+      <p class="muted">Enter the admin password to manage appointments, customisation, and maintenance settings.</p>
+      <label>
+        Password
+        <input name="password" type="password" autocomplete="current-password" placeholder="Enter admin password" required>
+      </label>
+      <button class="button primary" type="submit">Unlock dashboard</button>
+      <p class="form-message danger-text" data-login-message role="status"></p>
+    </form>
+  </main>
+
+  <main class="admin-layout is-hidden" data-admin-dashboard>
+    <aside class="admin-sidebar">
+      <h1>Admin Dashboard</h1>
+      <p class="muted">Maintain appointments, portal status, service notices, and display settings.</p>
+      <div class="admin-menu">
+        <a href="#overview">Overview</a>
+        <a href="#appointments">Appointments</a>
+        <a href="#customisation">Customisation</a>
+        <a href="#messages">SMS Messages</a>
+        <a href="#security">Security</a>
+        <a href="#maintenance">Maintenance</a>
+      </div>
+    </aside>
+
+    <section class="admin-content">
+      <section id="overview" class="dashboard-grid">
+        <article class="metric-card">
+          <span>Appointments</span>
+          <strong data-admin-count>0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Confirmed today</span>
+          <strong data-confirmed-count>0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Portal status</span>
+          <strong data-admin-status>Online</strong>
+        </article>
+        <article class="metric-card">
+          <span>Security</span>
+          <button class="button secondary" type="button" data-admin-logout>Logout</button>
+        </article>
+      </section>
+
+      <section id="appointments" class="panel">
+        <div class="panel-heading">
+          <h2>Appointment maintenance</h2>
+          <button class="button danger" type="button" data-clear-appointments>Clear all</button>
+        </div>
+        <div class="appointment-list" data-admin-appointments></div>
+      </section>
+
+      <section id="messages" class="panel">
+        <div class="panel-heading">
+          <h2>Patient SMS message settings</h2>
+          <span class="status-pill">Preview message</span>
+        </div>
+        <form class="settings-form compact-settings" data-sms-settings-form>
+          <label class="wide">
+            SMS template
+            <textarea name="smsTemplate" rows="4" placeholder="Hi {name}, your {department} appointment at {hospital} is on {date} at {time}. Status: {status}. ID: {id}."></textarea>
+          </label>
+          <button class="button primary" type="submit">Save SMS template</button>
+          <p class="form-message" data-sms-settings-message role="status"></p>
+        </form>
+      </section>
+
+      <section id="customisation" class="panel">
+        <div class="panel-heading">
+          <h2>Customisation options</h2>
+          <span class="status-pill">Live local settings</span>
+        </div>
+        <form class="settings-form" data-settings-form>
+          <label>
+            Hospital display name
+            <input name="hospitalName" type="text" placeholder="OM SUPATHAM HOSPITAL">
+          </label>
+          <label>
+            Logo image upload
+            <input name="logoImage" type="file" accept="image/*" data-image-upload="logoImage">
+          </label>
+          <label>
+            Hero small heading
+            <input name="heroEyebrow" type="text" placeholder="24/7 multispeciality care">
+          </label>
+          <label>
+            Hero headline
+            <input name="heroTitle" type="text" placeholder="Uses hospital display name" readonly>
+          </label>
+          <label class="wide">
+            Hero description
+            <textarea name="heroText" rows="3" placeholder="Connected emergency, outpatient, diagnostic, and digital care."></textarea>
+          </label>
+          <label>
+            Public notice
+            <input name="notice" type="text" placeholder="Cardiology camp this Friday">
+          </label>
+          <label>
+            Portal status
+            <select name="portalStatus">
+              <option>Online</option>
+              <option>Maintenance</option>
+              <option>Emergency only</option>
+            </select>
+          </label>
+          <label>
+            Accent color
+            <input name="accentColor" type="color" value="#0f9f8f">
+          </label>
+          <label>
+            Specialists count
+            <input name="statSpecialists" type="text" placeholder="35+">
+          </label>
+          <label>
+            Inpatient beds count
+            <input name="statBeds" type="text" placeholder="120">
+          </label>
+          <label>
+            Operation theatres count
+            <input name="statTheatres" type="text" placeholder="6">
+          </label>
+          <label>
+            Emergency support text
+            <input name="statEmergency" type="text" placeholder="24/7">
+          </label>
+          <label class="wide">
+            Specialities
+            <textarea name="specialties" rows="7" placeholder="Cardiology | Heart screening and cardiac ICU care. | image"></textarea>
+          </label>
+          <label>
+            Specialty image upload
+            <select name="specialtyImageTarget" data-image-target="specialties"></select>
+          </label>
+          <label>
+            Choose specialty image
+            <input type="file" accept="image/*" data-list-image-upload="specialties">
+          </label>
+          <label class="wide">
+            Hospital facilities
+            <textarea name="facilities" rows="6" placeholder="24/7 Emergency | Trauma response, ICU access, ambulance support."></textarea>
+          </label>
+          <label class="wide">
+            Doctors
+            <textarea name="doctors" rows="6" placeholder="Dr. Anita Rao | Senior Cardiologist for heart failure, hypertension, and cardiac ICU. | image"></textarea>
+          </label>
+          <label>
+            Doctor image upload
+            <select name="doctorImageTarget" data-image-target="doctors"></select>
+          </label>
+          <label>
+            Choose doctor image
+            <input type="file" accept="image/*" data-list-image-upload="doctors">
+          </label>
+          <label class="wide">
+            Gallery items
+            <textarea name="gallery" rows="6" placeholder="Operation Theatres | Modular theatres with infection control. | image"></textarea>
+          </label>
+          <label>
+            Gallery image upload
+            <select name="galleryImageTarget" data-image-target="gallery"></select>
+          </label>
+          <label>
+            Choose gallery image
+            <input type="file" accept="image/*" data-list-image-upload="gallery">
+          </label>
+          <button class="button primary" type="submit">Save settings</button>
+          <button class="button secondary" type="button" data-reset-content>Reset content</button>
+          <p class="form-message" data-settings-message role="status"></p>
+        </form>
+      </section>
+
+      <section id="security" class="panel">
+        <div class="panel-heading">
+          <h2>Admin password</h2>
+          <span class="status-pill">Local security</span>
+        </div>
+        <form class="settings-form compact-settings" data-password-form>
+          <label>
+            Current password
+            <input name="currentPassword" type="password" autocomplete="current-password" required>
+          </label>
+          <label>
+            New password
+            <input name="newPassword" type="password" autocomplete="new-password" minlength="6" required>
+          </label>
+          <label>
+            Confirm new password
+            <input name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required>
+          </label>
+          <button class="button primary" type="submit">Change password</button>
+          <p class="form-message" data-password-message role="status"></p>
+        </form>
+      </section>
+
+      <section id="maintenance" class="panel">
+        <div class="panel-heading">
+          <h2>Dashboard maintenance</h2>
+          <button class="button secondary" type="button" data-seed-demo>Load demo data</button>
+        </div>
+        <div class="maintenance-grid">
+          <label class="toggle-row"><input type="checkbox" checked> Patient portal active</label>
+          <label class="toggle-row"><input type="checkbox" checked> Appointment booking active</label>
+          <label class="toggle-row"><input type="checkbox"> Diagnostics queue hold</label>
+          <label class="toggle-row"><input type="checkbox"> Publish emergency notice</label>
+        </div>
+      </section>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <span><span data-brand-name>OM SUPATHAM HOSPITAL</span></span>
+    <span>Developed by Mahesh Kolla</span>
+  </footer>
+</body>
+</html>
